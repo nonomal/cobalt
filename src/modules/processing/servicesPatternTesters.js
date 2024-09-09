@@ -1,36 +1,73 @@
 export const testers = {
-    "twitter": (patternMatch) => (patternMatch["id"] && patternMatch["id"].length < 20)
-        || (patternMatch["spaceId"] && patternMatch["spaceId"].length === 13),
+    "bilibili": (patternMatch) =>
+        patternMatch.comId?.length <= 12 || patternMatch.comShortLink?.length <= 16
+        || patternMatch.tvId?.length <= 24,
 
-    "vk": (patternMatch) => (patternMatch["userId"] && patternMatch["videoId"]
-        && patternMatch["userId"].length <= 10 && patternMatch["videoId"].length <= 10),
+    "dailymotion": (patternMatch) => patternMatch.id?.length <= 32,
 
-    "bilibili": (patternMatch) => (patternMatch["id"] && patternMatch["id"].length <= 12),
+    "instagram": (patternMatch) =>
+        patternMatch.postId?.length <= 12
+        || (patternMatch.username?.length <= 30 && patternMatch.storyId?.length <= 24),
 
-    "youtube": (patternMatch) => (patternMatch["id"] && patternMatch["id"].length <= 11),
+    "loom": (patternMatch) =>
+        patternMatch.id?.length <= 32,
 
-    "reddit": (patternMatch) => (patternMatch["sub"] && patternMatch["id"] && patternMatch["title"]
-        && patternMatch["sub"].length <= 22 && patternMatch["id"].length <= 10 && patternMatch["title"].length <= 96),
+    "ok": (patternMatch) =>
+        patternMatch.id?.length <= 16,
 
-    "tiktok": (patternMatch) => ((patternMatch["user"] && patternMatch["postId"] && patternMatch["postId"].length <= 21)
-        || (patternMatch["id"] && patternMatch["id"].length <= 13)),
+    "pinterest": (patternMatch) =>
+        patternMatch.id?.length <= 128 || patternMatch.shortLink?.length <= 32,
 
-    "douyin": (patternMatch) => ((patternMatch["postId"] && patternMatch["postId"].length <= 21)
-        || (patternMatch["id"] && patternMatch["id"].length <= 13)),
+    "reddit": (patternMatch) =>
+        (patternMatch.sub?.length <= 22 && patternMatch.id?.length <= 10)
+        || (patternMatch.user?.length <= 22 && patternMatch.id?.length <= 10),
 
-    "tumblr": (patternMatch) => ((patternMatch["id"] && patternMatch["id"].length < 21)
-        || (patternMatch["id"] && patternMatch["id"].length < 21 && patternMatch["user"] && patternMatch["user"].length <= 32)),
+    "rutube": (patternMatch) =>
+        (patternMatch.id?.length === 32 && patternMatch.key?.length <= 32) ||
+        patternMatch.id?.length === 32 || patternMatch.yappyId?.length === 32,
 
-    "vimeo": (patternMatch) => ((patternMatch["id"] && patternMatch["id"].length <= 11)),
-    
-    "soundcloud": (patternMatch) => (patternMatch["author"]?.length <= 25 && patternMatch["song"]?.length <= 255)
-                                    || (patternMatch["shortLink"] && patternMatch["shortLink"].length <= 32),
+    "soundcloud": (patternMatch) =>
+        (patternMatch.author?.length <= 255 && patternMatch.song?.length <= 255)
+        || patternMatch.shortLink?.length <= 32,
 
-    "instagram": (patternMatch) => (patternMatch["id"] && patternMatch["id"].length <= 12),
-    
-    "vine": (patternMatch) => (patternMatch["id"] && patternMatch["id"].length <= 12),
-    
-    "pinterest": (patternMatch) => (patternMatch["id"] && patternMatch["id"].length <= 128),
+    "snapchat": (patternMatch) =>
+        (patternMatch.username?.length <= 32 && (!patternMatch.storyId || patternMatch.storyId?.length <= 255)) 
+        || patternMatch.spotlightId?.length <= 255 
+        || patternMatch.shortLink?.length <= 16,
 
-    "streamable": (patternMatch) => (patternMatch["id"] && patternMatch["id"].length === 6)
+    "streamable": (patternMatch) =>
+        patternMatch.id?.length === 6,
+
+    "tiktok": (patternMatch) =>
+        patternMatch.postId?.length <= 21 || patternMatch.id?.length <= 13,
+
+    "tumblr": (patternMatch) =>
+        patternMatch.id?.length < 21
+        || (patternMatch.id?.length < 21 && patternMatch.user?.length <= 32),
+
+    "twitch": (patternMatch) =>
+        patternMatch.channel && patternMatch.clip?.length <= 100,
+
+    "twitter": (patternMatch) =>
+        patternMatch.id?.length < 20,
+
+    "vimeo": (patternMatch) =>
+        patternMatch.id?.length <= 11
+        && (!patternMatch.password || patternMatch.password.length < 16),
+
+    "vine": (patternMatch) =>
+        patternMatch.id?.length <= 12,
+
+    "vk": (patternMatch) =>
+        patternMatch.userId?.length <= 10 && patternMatch.videoId?.length <= 10,
+
+    "youtube": (patternMatch) =>
+        patternMatch.id?.length <= 11,
+
+    "facebook": (patternMatch) =>
+        patternMatch.shortLink?.length <= 11
+        || patternMatch.username?.length <= 30
+        || patternMatch.caption?.length <= 255
+        || patternMatch.id?.length <= 20 && !patternMatch.shareType
+        || patternMatch.id?.length <= 20 && patternMatch.shareType?.length === 1,
 }

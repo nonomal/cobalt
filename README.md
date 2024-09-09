@@ -1,76 +1,136 @@
 # cobalt
-Best way to save what you love.  
-Live web app: [co.wukko.me](https://co.wukko.me/)  
+best way to save what you love: [cobalt.tools](https://cobalt.tools/)  
 
-![cobalt logo with repeated logo pattern background](https://raw.githubusercontent.com/wukko/cobalt/current/src/front/icons/pattern.png "cobalt logo with repeated logo pattern background")  
+![cobalt logo with repeated logo (double arrow) pattern background](/src/front/icons/pattern.png "cobalt logo with repeated logo (double arrow) pattern background")  
 
-[![DeepSource](https://deepsource.io/gh/wukko/cobalt.svg/?label=active+issues&token=MsmsJ9zUOKwcQor0yaiFot84)](https://deepsource.io/gh/wukko/cobalt/?ref=repository-badge)
+[💬 community discord server](https://discord.gg/pQPt8HBUPu)  
+[🐦 twitter/x](https://x.com/justusecobalt)  
 
-## What's cobalt?
-cobalt is social and media platform downloader that doesn't piss you off.
+## what's cobalt?
+cobalt is a media downloader that doesn't piss you off. it's fast, friendly, and doesn't have any bullshit that modern web is filled with: ***no ads, trackers, or invasive analytics***.  
 
-It's fast, friendly, and doesn't have any bullshit that modern web is filled with: no ads, trackers, or analytics.  
-Paste the link, get the video, move on. It's that simple. Just how it should be.
+paste the link, get the file, move on. it's that simple. just how it should be.
 
-## Supported services
-| Service                 | Video + Audio | Only audio  | Only video  | Additional notes or features                                                                                              |
-| --------                | :---:         | :---:       | :---:       | :-----                                                                                                                    |
-| bilibili.com            | ✅           | ✅         | ✅         |                                                                                                                           |
-| Instagram               | ✅           | ✅         | ✅         | Supports photos and videos, lets you pick what to save from multi-media posts.                                            |
-| Instagram Reels         | ✅           | ✅         | ✅         |                                                                                                                           |
-| Pinterest               | ✅           | ✅         | ✅         | Support for videos and stories.                                                                                           |
-| Reddit                  | ✅           | ✅         | ✅         | Support for GIFs and videos.                                                                                              |
-| SoundCloud              | ➖           | ✅         | ➖         | Audio metadata, downloads from private links.                                                                             |
-| Streamable              | ✅           | ✅         | ✅         |                                                                                                                           |
-| TikTok                  | ✅           | ✅         | ✅         | Supports downloads of: videos with or without watermark, images from slideshow without watermark, full (original) audios. |
-| Tumblr                  | ✅           | ✅         | ✅         | Support for audio file downloads.                                                                                         |
-| Twitter/X *             | ✅           | ✅         | ✅         | Ability to pick what to save from multi-media tweets.                                                                     |
-| Vimeo                   | ✅           | ✅         | ✅         | Audio downloads are only available for dash files.                                                                        |
-| Vine Archive            | ✅           | ✅         | ✅         |                                                                                                                           |
-| VK Videos               | ✅           | ❌         | ❌         |                                                                                                                           |
-| VK Clips                | ✅           | ❌         | ❌         |                                                                                                                           |
-| YouTube Videos & Shorts | ✅           | ✅         | ✅         | Support for 8K, 4K, HDR, VR, and high FPS videos. Audio metadata & dubs. h264/av1/vp9 codecs.                             |
-| YouTube Music           | ➖           | ✅         | ➖         | Audio metadata.                                                                                                           |
+## supported services
+this list is not final and keeps expanding over time. if support for a service you want is missing, create an issue (or a pull request 👀).
 
-This list is not final and keeps expanding over time, make sure to check it once in a while!  
-  
-*Reliability of downloads from Twitter is questionable due to its current management.
+| service                        | video + audio | only audio | only video | metadata | rich file names |
+| :--------                      | :-----------: | :--------: | :--------: | :------: | :-------------: |
+| bilibili.com & bilibili.tv     | ✅            | ✅         | ✅         | ➖         | ➖              |
+| dailymotion                    | ✅            | ✅         | ✅         | ✅         | ✅              |
+| instagram posts & reels        | ✅            | ✅         | ✅         | ➖         | ➖              |
+| facebook videos                | ✅            | ❌         | ❌         | ➖         | ➖              |
+| loom                           | ✅            | ❌         | ✅         | ✅         | ➖              |
+| ok video                       | ✅            | ❌         | ✅         | ✅         | ✅              |
+| pinterest                      | ✅            | ✅         | ✅         | ➖         | ➖              |
+| reddit                         | ✅            | ✅         | ✅         | ❌         | ❌              |
+| rutube                         | ✅            | ✅         | ✅         | ✅         | ✅              |
+| snapchat stories & spotlights  | ✅            | ✅         | ✅         | ➖         | ➖              |
+| soundcloud                     | ➖            | ✅         | ➖         | ✅         | ✅              |
+| streamable                     | ✅            | ✅         | ✅         | ➖         | ➖              |
+| tiktok                         | ✅            | ✅         | ✅         | ❌         | ❌              |
+| tumblr                         | ✅            | ✅         | ✅         | ➖         | ➖              |
+| twitch clips                   | ✅            | ✅         | ✅         | ✅         | ✅              |
+| twitter/x                      | ✅            | ✅         | ✅         | ➖         | ➖              |
+| vimeo                          | ✅            | ✅         | ✅         | ✅         | ✅              |
+| vine archive                   | ✅            | ✅         | ✅         | ➖         | ➖              |
+| vk videos & clips              | ✅            | ❌         | ✅         | ✅         | ✅              |
+| youtube videos, shorts & music | ✅            | ✅         | ✅         | ✅         | ✅              |
 
-## cobalt API
-cobalt has an open API that you can use in your projects for **free**.  
-It's easy and straightforward to use, [check out the docs](https://github.com/wukko/cobalt/blob/current/docs/API.md) and see for yourself.  
-Feel free to use the main API instance ([co.wuk.sh](https://co.wuk.sh/)) in your projects.
+| emoji   | meaning                 |
+| :-----: | :---------------------- |
+| ✅      | supported               |
+| ➖      | impossible/unreasonable |
+| ❌      | not supported           |
 
-## Host an instance yourself
-### Requirements
-- Node.js 18 or above
-- git
+### additional notes or features (per service)
+| service    | notes or features                                                                                                    |
+| :--------  | :-----                                                                                                               |
+| instagram  | supports reels, photos, and videos. lets you pick what to save from multi-media posts.                               |
+| facebook   | supports public accessible videos content only.                                                                      |
+| pinterest  | supports photos, gifs, videos and stories.                                                                           |
+| reddit     | supports gifs and videos.                                                                                            |
+| snapchat   | supports spotlights and stories. lets you pick what to save from stories.                                            |
+| rutube     | supports yappy & private links.                                                                                      |
+| soundcloud | supports private links.                                                                                              |
+| tiktok     | supports videos with or without watermark, images from slideshow without watermark, and full (original) audios.      |
+| twitter/x  | lets you pick what to save from multi-media posts. may not be 100% reliable due to current management.               |
+| vimeo      | audio downloads are only available for dash.                                                                         |
+| youtube    | supports videos, music, and shorts. 8K, 4K, HDR, VR, and high FPS videos. rich metadata & dubs. h264/av1/vp9 codecs. |
 
-Setup script installs all needed `npm` dependencies, but you have to install `Node.js` and `git` yourself.
+## cobalt api
+cobalt has an open api that you can use in your projects *for free~*. it's easy and straightforward to use, [check out the docs](/docs/api.md) to learn how to use it. 
 
-1. Clone the repo: `git clone https://github.com/wukko/cobalt`
-2. Run setup script and follow instructions: `npm run setup`
-3. Run cobalt via `npm start`
-4. Done.
+✅ you can use the main api instance ([api.cobalt.tools](https://api.cobalt.tools/)) in your **personal** projects.  
+❌ you cannot use the free api commercially (anywhere that's gated behind paywalls or ads). host your own instance for this.
 
-You need to host API and web app separately since v.6.0. Setup script will help you with that!
+we reserve the right to restrict abusive/excessive access to the main instance api.
 
-### Ubuntu 22.04+ workaround
-`nscd` needs to be installed and running so that the `ffmpeg-static` binary can resolve DNS ([#101](https://github.com/wukko/cobalt/issues/101#issuecomment-1494822258)):
+## how to run your own instance
+if you want to run your own instance for whatever purpose, [follow this guide](/docs/run-an-instance.md).  
+it's *highly* recommended to use a docker compose method unless you run for developing/debugging purposes.
 
-```bash
-sudo apt install nscd
-sudo service nscd start
-```
+## partners 
+cobalt is sponsored by [royalehosting.net](https://royalehosting.net/?partner=cobalt), all main instances are currently hosted on their network :)  
 
-### Docker
-It's also possible to run cobalt via Docker. I *highly* recommend using Docker compose.  
-Check out the [example compose file](https://github.com/wukko/cobalt/blob/current/docker-compose.example.yml) and alter it for your needs.
+## ethics and disclaimer
+cobalt is a tool for easing content downloads from internet and takes ***zero liability***. you are responsible for what you download, how you use and distribute that content. please be mindful when using content of others and always credit original creators. fair use and credits benefit everyone.
 
-## Disclaimer
-cobalt is my passion project, so update schedule depends solely on my free time, motivation, and mood.  
-Don't expect any consistency in that.
+cobalt is ***NOT*** a piracy tool and cannot be used as such. it can only download free, publicly accessible content. such content can be easily downloaded through any browser's dev tools. pressing one button is easier, so i made a convenient, ad-less tool for such repeated actions.
 
-## License
-cobalt is under [AGPL-3.0](https://github.com/wukko/cobalt/blob/current/LICENSE) license.  
-[Fluent Emoji](https://github.com/microsoft/fluentui-emoji) used in the project is under [MIT](https://github.com/microsoft/fluentui-emoji/blob/main/LICENSE) license.
+## cobalt license
+cobalt code is licensed under [AGPL-3.0](/LICENSE).
+
+cobalt branding, mascots, and other related assets included in the repo are ***copyrighted*** and not covered by the AGPL-3.0 license. you ***cannot*** use them under same terms.  
+
+you are allowed to host an ***unmodified*** instance of cobalt with branding, but this ***does not*** give you permission to use it anywhere else, or make derivatives of it in any way.
+
+### notes:
+- mascots and other assets are a part of the branding.
+
+- when making an alternative version of the project, please replace or remove all branding (including the name).
+
+- you **must** link the original repo when using any parts of code (such as using separate processing modules in your project) or forking the project.
+
+- if you make a modified version of cobalt, the codebase **must** be published under the same license (according to AGPL-3.0).
+
+## 3rd party licenses
+- [Fluent Emoji by Microsoft](https://github.com/microsoft/fluentui-emoji) (used in cobalt) is under [MIT](https://github.com/microsoft/fluentui-emoji/blob/main/LICENSE) license.  
+- [Noto Sans Mono](https://fonts.google.com/noto/specimen/Noto+Sans+Mono/) fonts (used in cobalt) are licensed under the [OFL](https://fonts.google.com/noto/specimen/Noto+Sans+Mono/about) license.  
+- many update banners were taken from [tenor.com](https://tenor.com/).  
+
+## acknowledgements
+### ffmpeg
+cobalt heavily relies on ffmpeg for converting and merging media files. it's an absolutely amazing piece of software offered for anyone for free, yet doesn't receive as much credit as it should.
+
+you can [support ffmpeg here](https://ffmpeg.org/donations.html)!
+
+#### ffmpeg-static
+we use [ffmpeg-static](https://github.com/eugeneware/ffmpeg-static) to get binaries for ffmpeg depending on the platform.
+
+you can support the developer via various methods listed on their github page! (linked above)
+
+### youtube.js
+cobalt relies on [youtube.js](https://github.com/LuanRT/YouTube.js) for interacting with the innertube api, it wouldn't have been possible without it.  
+
+you can support the developer via various methods listed on their github page! (linked above)
+
+### many others
+cobalt also depends on:
+
+- [content-disposition-header](https://www.npmjs.com/package/content-disposition-header) to simplify the provision of `content-disposition` headers.
+- [cors](https://www.npmjs.com/package/cors) to manage cross-origin resource sharing within expressjs.
+- [dotenv](https://www.npmjs.com/package/dotenv) to load environment variables from the `.env` file.
+- [esbuild](https://www.npmjs.com/package/esbuild) to minify the frontend files.
+- [express](https://www.npmjs.com/package/express) as the backbone of cobalt servers.
+- [express-rate-limit](https://www.npmjs.com/package/express-rate-limit) to rate limit api endpoints.
+- [hls-parser](https://www.npmjs.com/package/hls-parser) to parse `m3u8` playlists for certain services.
+- [ipaddr.js](https://www.npmjs.com/package/ipaddr.js) to parse ip addresses (for rate limiting).
+- [nanoid](https://www.npmjs.com/package/nanoid) to generate unique (temporary) identifiers for each requested stream.
+- [node-cache](https://www.npmjs.com/package/node-cache) to cache stream info in server ram for a limited amount of time.
+- [psl](https://www.npmjs.com/package/psl) as the domain name parser.
+- [set-cookie-parser](https://www.npmjs.com/package/set-cookie-parser) to parse cookies that cobalt receives from certain services.
+- [undici](https://www.npmjs.com/package/undici) for making http requests.
+- [url-pattern](https://www.npmjs.com/package/url-pattern) to match provided links with supported patterns.
+
+...and many other packages that these packages rely on.

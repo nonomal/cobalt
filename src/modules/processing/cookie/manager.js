@@ -1,9 +1,10 @@
 import Cookie from './cookie.js';
 import { readFile, writeFile } from 'fs/promises';
 import { parse as parseSetCookie, splitCookiesString } from 'set-cookie-parser';
+import { env } from '../../../modules/config.js'
 
 const WRITE_INTERVAL = 60000,
-      cookiePath = process.env.cookiePath,
+      cookiePath = env.cookiePath,
       COUNTER = Symbol('counter');
 
 let cookies = {}, dirty = false, intervalId;
@@ -56,7 +57,10 @@ export function updateCookie(cookie, headers) {
 
     cookie.unset(parsed.filter(c => c.expires < new Date()).map(c => c.name));
     parsed.filter(c => !c.expires || c.expires > new Date()).forEach(c => values[c.name] = c.value);
+    updateCookieValues(cookie, values);
+}
 
+export function updateCookieValues(cookie, values) {
     cookie.set(values);
     if (Object.keys(values).length) dirty = true
 }

@@ -1,9 +1,29 @@
-import { checkbox, collapsibleList, explanation, footerButtons, multiPagePopup, popup, popupWithBottomButtons, sep, settingsCategory, switcher, socialLink, urgentNotice, keyboardShortcuts } from "./elements.js";
-import { services as s, authorInfo, version, repo, donations, supportedAudio } from "../config.js";
+import { services as s, version, repo, donations, supportedAudio, links, env } from "../config.js";
 import { getCommitInfo } from "../sub/currentCommit.js";
 import loc from "../../localization/manager.js";
 import emoji from "../emoji.js";
 import changelogManager from "../changelog/changelogManager.js";
+
+import {
+    checkbox,
+    collapsibleList,
+    explanation,
+    footerButtons,
+    multiPagePopup,
+    popup,
+    popupWithBottomButtons, 
+    sep,
+    settingsCategory,
+    switcher,
+    socialLink,
+    socialLinks,
+    urgentNotice,
+    keyboardShortcuts,
+    webLoc,
+    sponsoredList,
+    betaTag,
+    linkSVG
+} from "./elements.js";
 
 let com = getCommitInfo();
 
@@ -27,14 +47,9 @@ for (let i in donations["crypto"]) {
 }
 
 export default function(obj) {
-    const t = (str, replace) => { return loc(obj.lang, str, replace) };
-
-    let ua = obj.useragent.toLowerCase();
-    let isIOS = ua.match("iphone os");
-    let isMobile = ua.match("android") || ua.match("iphone os");
-
-    let platform = isMobile ? "m" : "p";
-    if (isMobile && isIOS) platform = "i";
+    const t = (str, replace) => {
+        return loc(obj.lang, str, replace)
+    }
 
     audioFormats[0]["text"] = t('SettingsAudioFormatBest');
 
@@ -43,40 +58,51 @@ export default function(obj) {
 <!DOCTYPE html>
 <html lang="${obj.lang}">
     <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="viewport-fit=cover, width=device-width, height=device-height, initial-scale=1, maximum-scale=${isIOS ? `1` : `5`}" />
+        <meta charset="utf-8">
+        <meta name="viewport" content="viewport-fit=cover, width=device-width, height=device-height, initial-scale=1, maximum-scale=1">
 
         <title>${t("AppTitleCobalt")}</title>
 
-        <meta property="og:url" content="${process.env.webURL || process.env.selfURL}" />
-        <meta property="og:title" content="${t("AppTitleCobalt")}" />
-        <meta property="og:description" content="${t('EmbedBriefDescription')}" />
-        <meta property="og:image" content="${process.env.webURL || process.env.selfURL}icons/generic.png" />
-        <meta name="title" content="${t("AppTitleCobalt")}" />
-        <meta name="description" content="${t('AboutSummary')}" />
-        <meta name="theme-color" content="#000000" />
-        <meta name="twitter:card" content="summary" />
+        <meta property="og:url" content="${env.webURL}">
+        <meta property="og:title" content="${t("AppTitleCobalt")}">
+        <meta property="og:description" content="${t('EmbedBriefDescription')}">
+        <meta property="og:image" content="${env.webURL}icons/generic.png">
+        <meta name="title" content="${t("AppTitleCobalt")}">
+        <meta name="description" content="${t('AboutSummary')}">
+        <meta name="twitter:card" content="summary">
         
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
         <meta name="apple-mobile-web-app-title" content="${t("AppTitleCobalt")}">
 
-        <link rel="icon" type="image/x-icon" href="icons/favicon.ico" />
-        <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png" />
+        <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
+        <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png">
 
-        <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
 
-        <link rel="manifest" href="manifest.webmanifest" />
-        <link rel="stylesheet" href="fonts/notosansmono.css" rel="preload" />
-        <link rel="stylesheet" href="cobalt.css" />
+        <link rel="manifest" href="manifest.webmanifest">
+        <link rel="stylesheet" href="fonts/notosansmono.css">
+        <link rel="stylesheet" href="cobalt.css">
 
-        <link rel="me" href="${authorInfo.support.mastodon.url}">
+        <meta name="theme-color" content="#000000">
 
-        <noscript><div style="margin: 2rem;">${t('NoScriptMessage')}</div></noscript>
+        <link rel="preload" href="fonts/notosansmono.css" as="style">
+        <link rel="preload" href="assets/meowbalt/error.png" as="image">
+        <link rel="preload" href="assets/meowbalt/question.png" as="image">
+
+        ${env.plausibleHostname ?
+            `<script 
+                defer 
+                data-domain="${new URL(env.webURL).hostname}" 
+                src="https://${env.plausibleHostname}/js/script.js"
+            ></script>`
+        : ''}
     </head>
-    <body id="cobalt-body" ${platform === "p" ? 'class="desktop"' : ''} data-nosnippet ontouchstart>
-        <body id="notification-area"></div>
+    <body id="cobalt-body">
+        <noscript>
+            <div style="margin: 2rem;">${t('NoScriptMessage')}</div>
+        </noscript>
         ${multiPagePopup({
             name: "about",
             closeAria: t('AccessibilityGoBack'),
@@ -88,7 +114,7 @@ export default function(obj) {
                     header: {
                         aboveTitle: {
                             text: t('MadeWithLove'),
-                            url: authorInfo.link
+                            url: repo
                         },
                         closeAria: t('AccessibilityGoBack'),
                         title: `${emoji("🔮", 30)} ${t('TitlePopupAbout')}`
@@ -99,7 +125,11 @@ export default function(obj) {
                         text: collapsibleList([{
                             name: "services",
                             title: `${emoji("🔗")} ${t("CollapseServices")}`,
-                            body: `${enabledServices}<br/><br/>${t("ServicesNote")}`
+                            body: `${enabledServices}`
+                            + `<div class="explanation embedded">${t("SupportNotAffiliated")}`
+                            + `${obj.lang === "ru" ? `<br>${t("SupportMetaNoticeRU")}` : ''}`
+                            + `</div>`
+                            + `${t("ServicesNote")}`
                         }, {
                             name: "keyboard",
                             title: `${emoji("⌨")} ${t("CollapseKeyboard")}`,
@@ -118,7 +148,7 @@ export default function(obj) {
                                 }]
                             }, {
                                 items: [{
-                                    combo: "Ctrl+V",
+                                    combo: "⌘/Ctrl+V",
                                     name: t("KeyboardShortcutQuickPaste")
                                 }, {
                                     combo: "Esc",
@@ -142,33 +172,37 @@ export default function(obj) {
                         }, {
                             name: "support",
                             title: `${emoji("❤️‍🩹")} ${t("CollapseSupport")}`,
-                            body: 
-                            `${t("SupportSelfTroubleshooting")}<br/><br/>
-                            ${t("FollowSupport")}<br/>
-                            ${socialLink(
-                                emoji("🐦"), "twitter", authorInfo.support.twitter.handle, authorInfo.support.twitter.url
-                            )}
-                            ${socialLink(
-                                emoji("👾"), "discord", authorInfo.support.discord.handle, authorInfo.support.discord.url
-                            )}
-                            ${socialLink(
-                                emoji("🐘"), "mastodon", authorInfo.support.mastodon.handle, authorInfo.support.mastodon.url
-                            )}<br/>
-                            ${t("SourceCode")}<br/>
-                            ${socialLink(
-                                emoji("🐙"), "github", repo.replace("https://github.com/", ''), repo
-                            )}<br/>
-                            ${t("SupportNote")}`
+                            body: `${t("SupportSelfTroubleshooting")}`
+                            + `${socialLink(emoji("📢"), t("StatusPage"), links.statusPage)}`
+                            + `${socialLink(emoji("🔧"), t("TroubleshootingGuide"), links.troubleshootingGuide)}`
+                            + `<br>`
+                            + `${t("FollowSupport")}`
+                            + `${socialLinks(obj.lang)}`
+                            + `<br>`
+                            + `${t("SourceCode")}`
+                            + `${socialLink(emoji("🐙"), repo.replace("https://github.com/", ''), repo)}`
                         }, {
                             name: "privacy",
                             title: `${emoji("🔒")} ${t("CollapsePrivacy")}`,
-                            body: t("PrivacyPolicy")
+                            body: t("PrivacyPolicy") + `${
+                                env.plausibleHostname ? `<br><br>${t("AnalyticsDescription")}` : ''
+                            }`
                         }, {
                             name: "legal",
                             title: `${emoji("📑")} ${t("CollapseLegal")}`,
                             body: t("FairUse")
                         }])
-                    }]
+                    },
+                    ...(env.showSponsors ?
+                    [{
+                        text: t("SponsoredBy"),
+                        classes: ["sponsored-by-text"],
+                        nopadding: true
+                    }, {
+                        text: sponsoredList(),
+                        raw: true
+                    }] : []
+                    )]
                 })
             }, {
                 name: "changelog",
@@ -183,15 +217,18 @@ export default function(obj) {
                         text: `<div class="category-title">${t('ChangelogLastMajor')}</div>`,
                         raw: true
                     }, {
-                        text: changelogManager("banner") ?
-                        `<div class="changelog-banner">
-                            <img class="changelog-img" ` +
-                                `src="${changelogManager("banner")["url"]}" ` +
-                                `width="${changelogManager("banner")["width"]}" ` +
-                                `height="${changelogManager("banner")["height"]}" ` +
-                                `onerror="this.style.opacity=0" loading="lazy">`+
-                            `</img>
-                        </div>`: '',
+                        text: (() => {
+                            const banner = changelogManager('banner');
+                            if (!banner) return '';
+                            return `<div class="changelog-banner">
+                                        <img class="changelog-img" ` +
+                                            `src="${banner.url}" ` +
+                                            `alt="${banner.alt.replaceAll('"', '&quot;')}" ` +
+                                            `width="${banner.width}" ` +
+                                            `height="${banner.height}" ` +
+                                            `onerror="this.style.opacity=0" loading="lazy">
+                                    </div>`;
+                        })(),
                         raw: true
                     }, {
                         text: changelogManager("version"),
@@ -240,13 +277,14 @@ export default function(obj) {
                         text: `<div class="category-title">${t('DonateSub')}</div>`,
                         raw: true
                     }, {
-                        text: `<div class="changelog-banner">
+                        text: `
+                        <div class="changelog-banner">
                             <img class="changelog-img" ` +
-                                `src="updateBanners/catsleep.webp"` +
+                                `src="updateBanners/catsleep.webp" ` +
+                                `alt="${t("DonateImageDescription")}" ` +
                                 `width="480" ` +
                                 `height="270" ` +
-                                `onerror="this.style.opacity=0" loading="lazy">`+
-                            `</img>
+                                `onerror="this.style.opacity=0" loading="lazy">
                         </div>`,
                         raw: true
                     }, {
@@ -263,12 +301,6 @@ export default function(obj) {
                     }, {
                         text: donate.replace(/REPLACEME/g, t('ClickToCopy')),
                         classes: ["desc-padding"]
-                    }, {
-                        text: sep(),
-                        raw: true
-                    }, {
-                        text: t('DonateHireMe', authorInfo.link),
-                        classes: ["desc-padding"]
                     }]
                 })
             }],
@@ -278,7 +310,7 @@ export default function(obj) {
             closeAria: t('AccessibilityGoBack'),
             header: {
                 aboveTitle: {
-                    text: `v.${version}-${obj.hash}${platform} (${obj.branch})`,
+                    text: `v.${version}-${obj.hash} (${obj.branch})`,
                     url: `${repo}/commit/${obj.hash}`
                 },
                 title: `${emoji("⚙️", 30)} ${t('TitlePopupSettings')}`
@@ -313,20 +345,18 @@ export default function(obj) {
                         }, {
                             action: "360",
                             text: "360p"
+                        }, {
+                            action: "240",
+                            text: "240p"
+                        }, {
+                            action: "144",
+                            text: "144p"
                         }]
                     })
                 })
                 + settingsCategory({
-                    name: "tiktok",
-                    title: "tiktok",
-                    body: checkbox([{
-                        action: "disableTikTokWatermark",
-                        name: t("SettingsRemoveWatermark"),
-                        padding: "no-margin"
-                    }])
-                })
-                + settingsCategory({
-                    name: t('SettingsCodecSubtitle'),
+                    name: "codec",
+                    title: t('SettingsCodecSubtitle'),
                     body: switcher({
                         name: "vCodec",
                         explanation: t('SettingsCodecDescription'),
@@ -343,18 +373,24 @@ export default function(obj) {
                     })
                 })
                 + settingsCategory({
-                    name: t('SettingsVimeoPrefer'),
-                    body: switcher({
-                        name: "vimeoDash",
-                        explanation: t('SettingsVimeoPreferDescription'),
-                        items: [{
-                            action: "false",
-                            text: "progressive"
-                        }, {
-                            action: "true",
-                            text: "dash"
-                        }]
-                    })
+                    name: "twitter",
+                    title: "twitter",
+                    body: checkbox([{
+                        action: "twitterGif",
+                        name: t("SettingsTwitterGif"),
+                        padding: "no-margin"
+                    }])
+                    + explanation(t('SettingsTwitterGifDescription'))
+                })
+                + settingsCategory({
+                    name: "tiktok",
+                    title: "tiktok",
+                    body: checkbox([{
+                        action: "tiktokH265",
+                        name: t("SettingsTikTokH265"),
+                        padding: "no-margin"
+                    }])
+                    + explanation(t('SettingsTikTokH265Description'))
                 })
             }, {
                 name: "audio",
@@ -376,22 +412,17 @@ export default function(obj) {
                     + explanation(t('SettingsVideoMuteExplanation'))
                 })
                 + settingsCategory({
-                    name: "dub",
+                    name: "youtube-dub",
                     title: t("SettingsAudioDub"),
-                    body: switcher({
-                        name: "dubLang",
-                        explanation: t('SettingsAudioDubDescription'),
-                        items: [{
-                            action: "original",
-                            text: t('SettingsDubDefault')
-                        }, {
-                            action: "auto",
-                            text: t('SettingsDubAuto')
-                        }]
-                    })
+                    body: checkbox([{
+                        action: "ytDub",
+                        name: t("SettingsYoutubeDub"),
+                        padding: "no-margin"
+                    }])
+                    + explanation(t('SettingsYoutubeDubDescription'))
                 })
                 + settingsCategory({
-                    name: "tiktok",
+                    name: "tiktok-audio",
                     title: "tiktok",
                     body: checkbox([{
                         action: "fullTikTokAudio",
@@ -421,6 +452,43 @@ export default function(obj) {
                     })
                 })
                 + settingsCategory({
+                    name: "filename",
+                    title: t('FilenameTitle'),
+                    body: switcher({
+                        name: "filenamePattern",
+                        items: [{
+                            action: "classic",
+                            text: t('FilenamePatternClassic')
+                        }, {
+                            action: "basic",
+                            text: t('FilenamePatternBasic')
+                        }, {
+                            action: "pretty",
+                            text: t('FilenamePatternPretty')
+                        }, {
+                            action: "nerdy",
+                            text: t('FilenamePatternNerdy')
+                        }]
+                    })
+                    + `<div id="filename-preview">
+                        <div id="video-filename" class="filename-item line">
+                            ${emoji('🎞️', 32, 1, 1)}
+                            <div class="filename-container">
+                                <div class="filename-label">${t('Preview')}</div>
+                                <div id="video-filename-text"></div>
+                            </div>
+                        </div>
+                        <div id="audio-filename" class="filename-item">
+                            ${emoji('🎧', 32, 1, 1)}
+                            <div class="filename-container">
+                                <div class="filename-label">${t('Preview')}</div>
+                                <div id="audio-filename-text"></div>
+                            </div>
+                        </div>
+                    </div>`
+                    + explanation(t('FilenameDescription'))
+                })
+                + settingsCategory({
                     name: "accessibility",
                     title: t('Accessibility'),
                     body: checkbox([{
@@ -436,20 +504,34 @@ export default function(obj) {
                         padding: "no-margin"
                     }])
                 })
+                + (() => {
+                    if (env.plausibleHostname) {
+                        return settingsCategory({
+                            name: "privacy",
+                            title: t('PrivateAnalytics'),
+                            body: checkbox([{
+                                action: "plausible_ignore",
+                                name: t("SettingsDisableAnalytics"),
+                                padding: "no-margin"
+                            }])
+                            + explanation(t('SettingsAnalyticsExplanation'))
+                        })
+                    }
+                    return ''
+                })()
                 + settingsCategory({
                     name: "miscellaneous",
                     title: t('Miscellaneous'),
                     body: checkbox([{
-                        action: "disableChangelog",
-                        name: t("SettingsDisableNotifications")
-                    }, {
                         action: "downloadPopup",
                         name: t("SettingsEnableDownloadPopup"),
-                        padding: "no-margin",
                         aria: t("AccessibilityEnableDownloadPopup")
+                    }, {
+                        action: "disableMetadata",
+                        name: t("SettingsDisableMetadata")
                     }])
                 })
-            }],
+            }]
         })}
         ${popupWithBottomButtons({
             name: "picker",
@@ -466,15 +548,17 @@ export default function(obj) {
                 name: "download",
                 standalone: true,
                 buttonOnly: true,
-                classes: ["small", "glass-bkg"],
+                classes: ["small"],
                 header: {
                     closeAria: t('AccessibilityGoBack'),
-                    emoji: emoji("🐱", 78, 1, 1),
+                    emoji: `<img class="popout-meowbalt" `
+                              + `draggable="false" loading="lazy" `
+                              + `alt="😿" src="assets/meowbalt/question.png">`,
                     title: t('TitlePopupDownload')
                 },
                 body: switcher({
                     name: "download",
-                    explanation: `${!isIOS ? t('DownloadPopupDescription') : t('DownloadPopupDescriptionIOS')}`,
+                    explanation: t('DownloadPopupDescription'),
                     items: `<a id="pd-download" class="switch full" target="_blank" href="/"><span>${t('Download')}</span></a>
                     <div id="pd-share" class="switch full">${t('ShareURL')}</div>
                     <div id="pd-copy" class="switch full">${t('CopyURL')}</div>`
@@ -487,31 +571,32 @@ export default function(obj) {
                 name: "error",
                 standalone: true,
                 buttonOnly: true,
-                classes: ["small", "glass-bkg"],
+                classes: ["small"],
                 header: {
-                    closeAria: t('AccessibilityGoBack'),
-                    title: t('TitlePopupError'),
-                    emoji: emoji("😿", 78, 1, 1),
+                    emoji: `<img class="popout-meowbalt" `
+                              + `draggable="false" loading="lazy" `
+                              + `alt="😿" src="assets/meowbalt/error.png">`,
                 },
-                body: `<div id="desc-error" class="desc-padding subtext"></div>`,
+                body: `<div id="desc-error" class="desc-padding subtext desc-error"></div>`,
                 buttonText: t('ErrorPopupCloseButton')
             })}
         </div>
         <div id="popup-backdrop" onclick="hideAllPopups()"></div>
         <div id="home" style="visibility:hidden">
             ${urgentNotice({
-                emoji: "🔗",
-                text: t("UrgentFeatureUpdate71"),
+                emoji: "🎉",
+                text: t("UpdateOneMillion"),
                 visible: true,
                 action: "popup('about', 1, 'changelog')"
             })}
             <div id="cobalt-main-box" class="center">
-                <div id="logo">${t("AppTitleCobalt")}</div>
+                <div id="logo">${t("AppTitleCobalt")}${betaTag()}</div>
                 <div id="download-area">
                     <div id="top">
-                        <input id="url-input-area" class="mono" type="text" autocorrect="off" maxlength="128" autocapitalize="off" placeholder="${t('LinkInput')}" aria-label="${t('AccessibilityInputArea')}" oninput="button()"></input>
+                        <div id="link-icon">${linkSVG}</div>
+                        <input id="url-input-area" class="mono" type="text" autocomplete="off" data-form-type="other" spellcheck="false" maxlength="256" autocapitalize="off" placeholder="${t('LinkInput')}" aria-label="${t('AccessibilityInputArea')}" oninput="button()">
                         <button id="url-clear" onclick="clearInput()" style="display:none;">x</button>
-                        <input id="download-button" class="mono dontRead" onclick="download(document.getElementById('url-input-area').value)" type="submit" value="" disabled=true aria-label="${t('AccessibilityDownloadButton')}">
+                        <input id="download-button" class="mono dontRead" onclick="download(document.getElementById('url-input-area').value)" type="submit" value="" disabled aria-label="${t('AccessibilityDownloadButton')}">
                     </div>
                     <div id="bottom">
                         <button id="paste" class="switch" onclick="pasteClipboard()" aria-label="${t('PasteFromClipboard')}">${emoji("📋", 22)} ${t('PasteFromClipboard')}</button>
@@ -549,24 +634,30 @@ export default function(obj) {
                 }])}
             </footer>
         </div>
+        <script>
+            let defaultApiUrl = '${env.apiURL}';
+            const loc = ${webLoc(t,
+            [
+                'ErrorNoInternet',
+                'ErrorNoUrlReturned',
+                'ErrorUnknownStatus',
+                'ChangelogPressToHide',
+                'MediaPickerTitle',
+                'MediaPickerExplanationPhone',
+                'MediaPickerExplanationPC',
+                'FeatureErrorGeneric',
+                'ClipboardErrorNoPermission',
+                'ClipboardErrorFirefox',
+                'DataTransferSuccess',
+                'DataTransferError',
+                'FilenamePreviewVideoTitle',
+                'FilenamePreviewAudioTitle',
+                'FilenamePreviewAudioAuthor',
+                'DownloadPopupDescriptionIOS'
+            ])}
+        </script>
+        <script src="cobalt.js"></script>
     </body>
-    <script type="text/javascript">
-        const loc = {
-            noInternet: ` + "`" + t('ErrorNoInternet') + "`" + `,
-            noURLReturned: ` + "`" + t('ErrorNoUrlReturned') + "`" + `,
-            unknownStatus: ` + "`" + t('ErrorUnknownStatus') + "`" + `,
-            collapseHistory: ` + "`" + t('ChangelogPressToHide') + "`" + `,
-            pickerDefault: ` + "`" + t('MediaPickerTitle') + "`" + `,
-            pickerImages: ` + "`" + t('ImagePickerTitle') + "`" + `,
-            pickerImagesExpl: ` + "`" + t(`ImagePickerExplanation${isMobile ? "Phone" : "PC"}`) + "`" + `,
-            pickerDefaultExpl: ` + "`" + t(`MediaPickerExplanation${isMobile ? "Phone" : "PC"}`) + "`" + `,
-            featureErrorGeneric: ` + "`" + t('FeatureErrorGeneric') + "`" + `,
-            clipboardErrorNoPermission: ` + "`" + t('ClipboardErrorNoPermission') + "`" + `,
-            clipboardErrorFirefox: ` + "`" + t('ClipboardErrorFirefox') + "`" + `,
-        };
-        let apiURL = '${process.env.apiURL ? process.env.apiURL.slice(0, -1) : ''}';
-    </script>
-    <script type="text/javascript" src="cobalt.js"></script>
 </html>
 `
     } catch (err) {

@@ -1,9 +1,10 @@
 import { existsSync, unlinkSync, appendFileSync } from "fs";
 import { createInterface } from "readline";
 import { Cyan, Bright } from "./sub/consoleText.js";
+import { loadJSON } from "./sub/loadFromFs.js";
 import { execSync } from "child_process";
 
-import { version } from "../modules/config.js";
+const { version } = loadJSON("./package.json");
 
 let envPath = './.env';
 let q = `${Cyan('?')} \x1b[1m`;
@@ -29,39 +30,36 @@ console.log(
     `${Cyan(`Hey, this is cobalt v.${version}!`)}\n${Bright("Let's start by creating a new ")}${Cyan(".env")}${Bright(" file. You can always change it later.")}`
 )
 
-console.log(
-    `\n${Bright("⚠️ Please notice that since v.6.0 cobalt is hosted in two parts. API and web app are now separate.\nMerged hosting is no longer available.")}`
-)
 function setup() {
     console.log(Bright("\nWhat kind of server will this instance be?\nOptions: api, web."));
 
     rl.question(q, r1 => {
         switch (r1.toLowerCase()) {
             case 'api':
-                console.log(Bright("\nCool! What's the domain this API instance will be running on? (localhost)\nExample: co.wuk.sh"));
+                console.log(Bright("\nCool! What's the domain this API instance will be running on? (localhost)\nExample: api.cobalt.tools"));
 
                 rl.question(q, apiURL => {
-                    ob['apiURL'] = `http://localhost:9000/`;
-                    ob['apiPort'] = 9000;
-                    if (apiURL && apiURL !== "localhost") ob['apiURL'] = `https://${apiURL.toLowerCase()}/`;
+                    ob.API_URL = `http://localhost:9000/`;
+                    ob.API_PORT = 9000;
+                    if (apiURL && apiURL !== "localhost") ob.API_URL = `https://${apiURL.toLowerCase()}/`;
 
                     console.log(Bright("\nGreat! Now, what port will it be running on? (9000)"));
 
                     rl.question(q, apiPort => {
-                        if (apiPort) ob['apiPort'] = apiPort;
-                        if (apiPort && (apiURL === "localhost" || !apiURL)) ob['apiURL'] = `http://localhost:${apiPort}/`;
+                        if (apiPort) ob.API_PORT = apiPort;
+                        if (apiPort && (apiURL === "localhost" || !apiURL)) ob.API_URL = `http://localhost:${apiPort}/`;
 
                         console.log(Bright("\nWhat will your instance's name be? Usually it's something like eu-nl aka region-country. (local)"));
 
                         rl.question(q, apiName => {
-                            ob['apiName'] = apiName.toLowerCase();
-                            if (!apiName || apiName === "local") ob['apiName'] = "local";
+                            ob.API_NAME = apiName.toLowerCase();
+                            if (!apiName || apiName === "local") ob.API_NAME = "local";
 
                             console.log(Bright("\nOne last thing: would you like to enable CORS? It allows other websites and extensions to use your instance's API.\ny/n (n)"));
 
                             rl.question(q, apiCors => {
                                 let answCors = apiCors.toLowerCase().trim();
-                                if (answCors !== "y" && answCors !== "yes") ob['cors'] = '0'
+                                if (answCors !== "y" && answCors !== "yes") ob.CORS_WILDCARD = '0'
                                 final()
                             })
                         })
@@ -70,28 +68,28 @@ function setup() {
                 })
                 break;
             case 'web':
-                console.log(Bright("\nAwesome! What's the domain this web app instance will be running on? (localhost)\nExample: co.wukko.me"));
+                console.log(Bright("\nAwesome! What's the domain this web app instance will be running on? (localhost)\nExample: cobalt.tools"));
     
                 rl.question(q, webURL => {
-                    ob['webURL'] = `http://localhost:9001/`;
-                    ob['webPort'] = 9001;
-                    if (webURL && webURL !== "localhost") ob['webURL'] = `https://${webURL.toLowerCase()}/`;
+                    ob.WEB_URL = `http://localhost:9001/`;
+                    ob.WEB_PORT = 9001;
+                    if (webURL && webURL !== "localhost") ob.WEB_URL = `https://${webURL.toLowerCase()}/`;
     
                     console.log(
                         Bright("\nGreat! Now, what port will it be running on? (9001)")
                     )
                     rl.question(q, webPort => {
-                        if (webPort) ob['webPort'] = webPort;
-                        if (webPort && (webURL === "localhost" || !webURL)) ob['webURL'] = `http://localhost:${webPort}/`;
+                        if (webPort) ob.WEB_PORT = webPort;
+                        if (webPort && (webURL === "localhost" || !webURL)) ob.WEB_URL = `http://localhost:${webPort}/`;
 
                         console.log(
-                            Bright("\nOne last thing: what default API domain should be used? (co.wuk.sh)\nIf it's hosted locally, make sure to include the port:") + Cyan(" localhost:9000")
+                            Bright("\nOne last thing: what default API domain should be used? (api.cobalt.tools)\nIf it's hosted locally, make sure to include the port:") + Cyan(" localhost:9000")
                         );
 
                         rl.question(q, apiURL => {
-                            ob['apiURL'] = `https://${apiURL.toLowerCase()}/`;
-                            if (apiURL.includes(':')) ob['apiURL'] = `http://${apiURL.toLowerCase()}/`;
-                            if (!apiURL) ob['apiURL'] = "https://co.wuk.sh/";
+                            ob.API_URL = `https://${apiURL.toLowerCase()}/`;
+                            if (apiURL.includes(':')) ob.API_URL = `http://${apiURL.toLowerCase()}/`;
+                            if (!apiURL) ob.API_URL = "https://api.cobalt.tools/";
                             final()
                         })
                     });

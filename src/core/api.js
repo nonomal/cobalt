@@ -1,178 +1,228 @@
 import cors from "cors";
 import rateLimit from "express-rate-limit";
-import { randomBytes } from "crypto";
+import { setGlobalDispatcher, ProxyAgent } from "undici";
 
-const ipSalt = randomBytes(64).toString('hex');
+import { env, version } from "../modules/config.js";
 
-import { version } from "../modules/config.js";
-import { getJSON } from "../modules/api.js";
-import { apiJSON, checkJSONPost, getIP, languageCode } from "../modules/sub/utils.js";
+import { generateHmac, generateSalt } from "../modules/sub/crypto.js";
 import { Bright, Cyan } from "../modules/sub/consoleText.js";
-import stream from "../modules/stream/stream.js";
+import { languageCode } from "../modules/sub/utils.js";
 import loc from "../localization/manager.js";
-import { sha256 } from "../modules/sub/crypto.js";
-import { verifyStream } from "../modules/stream/manage.js";
+
+import { createResponse, normalizeRequest, getIP } from "../modules/processing/request.js";
+import { verifyStream, getInternalStream } from "../modules/stream/manage.js";
+import { randomizeCiphers } from '../modules/sub/randomize-ciphers.js';
+import { extract } from "../modules/processing/url.js";
+import match from "../modules/processing/match.js";
+import stream from "../modules/stream/stream.js";
+
+const acceptRegex = /^application\/json(; charset=utf-8)?$/;
+
+const ipSalt = generateSalt();
+const corsConfig = env.corsWildcard ? {} : {
+    origin: env.corsURL,
+    optionsSuccessStatus: 200
+}
 
 export function runAPI(express, app, gitCommit, gitBranch, __dirname) {
-    const corsConfig = process.env.cors === '0' ? {
-        origin: process.env.webURL,
-        optionsSuccessStatus: 200
-    } : {};
+    const startTime = new Date();
+    const startTimestamp = startTime.getTime();
+
+    const serverInfo = {
+        version: version,
+        commit: gitCommit,
+        branch: gitBranch,
+        name: env.apiName,
+        url: env.apiURL,
+        cors: Number(env.corsWildcard),
+        startTime: `${startTimestamp}`
+    }
 
     const apiLimiter = rateLimit({
-        windowMs: 60000,
-        max: 20,
+        windowMs: env.rateLimitWindow * 1000,
+        max: env.rateLimitMax,
         standardHeaders: true,
         legacyHeaders: false,
-        keyGenerator: (req, res) => sha256(getIP(req), ipSalt),
-        handler: (req, res, next, opt) => {
+        keyGenerator: req => generateHmac(getIP(req), ipSalt),
+        handler: (req, res) => {
             return res.status(429).json({
                 "status": "rate-limit",
-                "text": loc(languageCode(req), 'ErrorRateLimit')
+                "text": loc(languageCode(req), 'ErrorRateLimit', env.rateLimitWindow)
             });
         }
-    });
-    const apiLimiterStream = rateLimit({
-        windowMs: 60000,
-        max: 25,
-        standardHeaders: true,
-        legacyHeaders: false,
-        keyGenerator: (req, res) => sha256(getIP(req), ipSalt),
-        handler: (req, res, next, opt) => {
-            return res.status(429).json({
-                "status": "rate-limit",
-                "text": loc(languageCode(req), 'ErrorRateLimit')
-            });
-        }
-    });
-    
-    const startTime = new Date();
-    const startTimestamp = Math.floor(startTime.getTime());
+    })
 
-    app.use('/api/:type', cors(corsConfig));
+    const apiLimiterStream = rateLimit({
+        windowMs: env.rateLimitWindow * 1000,
+        max: env.rateLimitMax,
+        standardHeaders: true,
+        legacyHeaders: false,
+        keyGenerator: req => generateHmac(getIP(req), ipSalt),
+        handler: (req, res) => {
+            return res.sendStatus(429)
+        }
+    })
+
+    app.set('trust proxy', ['loopback', 'uniquelocal']);
+
+    app.use('/api', cors({
+        methods: ['GET', 'POST'],
+        exposedHeaders: [
+            'Ratelimit-Limit',
+            'Ratelimit-Policy',
+            'Ratelimit-Remaining',
+            'Ratelimit-Reset'
+        ],
+        ...corsConfig,
+    }))
+
     app.use('/api/json', apiLimiter);
     app.use('/api/stream', apiLimiterStream);
-    app.use('/api/onDemand', apiLimiter);
 
     app.use((req, res, next) => {
-        try { decodeURIComponent(req.path) } catch (e) { return res.redirect('/') }
-        next();
-    });
-    app.use('/api/json', express.json({
-        verify: (req, res, buf) => {
-            let acceptCon = String(req.header('Accept')) === "application/json";
-            if (acceptCon) {
-                if (buf.length > 720) throw new Error();
-                JSON.parse(buf);
-            } else {
-                throw new Error();
-            }
+        try {
+            decodeURIComponent(req.path)
+        } catch {
+            return res.redirect('/')
         }
-    }));
-    // handle express.json errors properly (https://github.com/expressjs/express/issues/4065)
-    app.use('/api/json', (err, req, res, next) => {
-        let errorText = "invalid json body";
-        let acceptCon = String(req.header('Accept')) !== "application/json";
+        next();
+    })
 
-        if (err || acceptCon) {
-            if (acceptCon) errorText = "invalid accept header";
+    app.use('/api/json', express.json({ limit: 1024 }));
+    app.use('/api/json', (err, _, res, next) => {
+        if (err) {
             return res.status(400).json({
                 status: "error",
-                text: errorText
+                text: "invalid json body"
             });
-        } else {
-            next();
         }
-    });
-    app.post('/api/json', async (req, res) => {
-        try {
-            let lang = languageCode(req);
-            let j = apiJSON(0, { t: "bad request" });
-            try {
-                let contentCon = String(req.header('Content-Type')) === "application/json";
-                let request = req.body;
-                if (contentCon && request.url) {
-                    request.dubLang = request.dubLang ? lang : false;
-    
-                    let chck = checkJSONPost(request);
-                    if (!chck) throw new Error();
-    
-                    j = await getJSON(chck["url"], lang, chck);
-                } else {
-                    j = apiJSON(0, {
-                        t: !contentCon ? "invalid content type header" : loc(lang, 'ErrorNoLink')
-                    });
-                }
-            } catch (e) {
-                j = apiJSON(0, { t: loc(lang, 'ErrorCantProcess') });
-            }
-            return res.status(j.status).json(j.body);
-        } catch (e) {
-            return res.destroy();
-        }
+
+        next();
     });
 
-    app.get('/api/:type', (req, res) => {
-        try {
-            switch (req.params.type) {
-                case 'stream':
-                    if (req.query.t && req.query.h && req.query.e && req.query.t.toString().length === 21
-                    && req.query.h.toString().length === 64 && req.query.e.toString().length === 13) {
-                        let streamInfo = verifyStream(req.query.t, req.query.h, req.query.e);
-                        if (streamInfo.error) {
-                            return res.status(streamInfo.status).json(apiJSON(0, { t: streamInfo.error }).body);
-                        }
-                        if (req.query.p) {
-                            return res.status(200).json({
-                                status: "continue"
-                            });
-                        }
-                        return stream(res, streamInfo);
-                    } else {
-                        let j = apiJSON(0, {
-                            t: "stream token, hmac, or expiry timestamp is missing"
-                        })
-                        return res.status(j.status).json(j.body);
-                    }
-                case 'serverInfo':
-                    return res.status(200).json({
-                        version: version,
-                        commit: gitCommit,
-                        branch: gitBranch,
-                        name: process.env.apiName ? process.env.apiName : "unknown",
-                        url: process.env.apiURL,
-                        cors: process.env.cors && process.env.cors === "0" ? 0 : 1,
-                        startTime: `${startTimestamp}`
-                    });
-                default:
-                    let j = apiJSON(0, {
-                        t: "unknown response type"
-                    })
-                    return res.status(j.status).json(j.body);
-            }
-        } catch (e) {
-            return res.status(500).json({
-                status: "error",
-                text: loc(languageCode(req), 'ErrorCantProcess')
-            });
+    app.post('/api/json', async (req, res) => {
+        const request = req.body;
+        const lang = languageCode(req);
+
+        const fail = (t) => {
+            const { status, body } = createResponse("error", { t: loc(lang, t) });
+            res.status(status).json(body);
         }
-    });
-    app.get('/api/status', (req, res) => {
-        res.status(200).end()
-    });
+
+        if (!acceptRegex.test(req.header('Accept'))) {
+            return fail('ErrorInvalidAcceptHeader');
+        }
+
+        if (!acceptRegex.test(req.header('Content-Type'))) {
+            return fail('ErrorInvalidContentType');
+        }
+
+        if (!request.url) {
+            return fail('ErrorNoLink');
+        }
+
+        request.dubLang = request.dubLang ? lang : false;
+        const normalizedRequest = normalizeRequest(request);
+        if (!normalizedRequest) {
+            return fail('ErrorCantProcess');
+        }
+
+        const parsed = extract(normalizedRequest.url);
+        if (parsed === null) {
+            return fail('ErrorUnsupported');
+        }
+
+        try {
+            const result = await match(
+                parsed.host, parsed.patternMatch, lang, normalizedRequest
+            );
+
+            res.status(result.status).json(result.body);
+        } catch {
+            fail('ErrorSomethingWentWrong');
+        }
+    })
+
+    app.get('/api/stream', (req, res) => {
+        const id = String(req.query.id);
+        const exp = String(req.query.exp);
+        const sig = String(req.query.sig);
+        const sec = String(req.query.sec);
+        const iv = String(req.query.iv);
+
+        const checkQueries = id && exp && sig && sec && iv;
+        const checkBaseLength = id.length === 21 && exp.length === 13;
+        const checkSafeLength = sig.length === 43 && sec.length === 43 && iv.length === 22;
+
+        if (!checkQueries || !checkBaseLength || !checkSafeLength) {
+            return res.sendStatus(400);
+        }
+
+        // rate limit probe, will not return json after 8.0
+        if (req.query.p) {
+            return res.status(200).json({
+                status: "continue"
+            })
+        }
+
+        const streamInfo = verifyStream(id, sig, exp, sec, iv);
+        if (!streamInfo?.service) {
+            return res.sendStatus(streamInfo.status);
+        }
+        return stream(res, streamInfo);
+    })
+
+    app.get('/api/istream', (req, res) => {
+        if (!req.ip.endsWith('127.0.0.1')) {
+            return res.sendStatus(403);
+        }
+
+        if (String(req.query.id).length !== 21) {
+            return res.sendStatus(400);
+        }
+
+        const streamInfo = getInternalStream(req.query.id);
+        if (!streamInfo) {
+            return res.sendStatus(404);
+        }
+
+        streamInfo.headers = new Map([
+            ...(streamInfo.headers || []),
+            ...Object.entries(req.headers)
+        ]);
+
+        return stream(res, { type: 'internal', ...streamInfo });
+    })
+
+    app.get('/api/serverInfo', (_, res) => {
+        return res.status(200).json(serverInfo);
+    })
+
     app.get('/favicon.ico', (req, res) => {
         res.sendFile(`${__dirname}/src/front/icons/favicon.ico`)
-    });
-    app.get('/*', (req, res) => {
-        res.redirect('/api/json')
-    });
+    })
 
-    app.listen(process.env.apiPort, () => {
+    app.get('/*', (req, res) => {
+        res.redirect('/api/serverInfo')
+    })
+
+    randomizeCiphers();
+    setInterval(randomizeCiphers, 1000 * 60 * 30); // shuffle ciphers every 30 minutes
+
+    if (env.externalProxy) {
+        if (env.freebindCIDR) {
+            throw new Error('Freebind is not available when external proxy is enabled')
+        }
+
+        setGlobalDispatcher(new ProxyAgent(env.externalProxy))
+    }
+
+    app.listen(env.apiPort, env.listenAddress, () => {
         console.log(`\n` +
             `${Cyan("cobalt")} API ${Bright(`v.${version}-${gitCommit} (${gitBranch})`)}\n` +
             `Start time: ${Bright(`${startTime.toUTCString()} (${startTimestamp})`)}\n\n` +
-            `URL: ${Cyan(`${process.env.apiURL}`)}\n` +
-            `Port: ${process.env.apiPort}\n`
+            `URL: ${Cyan(`${env.apiURL}`)}\n` +
+            `Port: ${env.apiPort}\n`
         )
-    });
+    })
 }
